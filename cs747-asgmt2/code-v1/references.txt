@@ -1,0 +1,4 @@
+https://www.cse.iitb.ac.in/~shivaram/teaching/cs747-s2025/lectures/cs747a2022l10.pdf
+https://www.cse.iitb.ac.in/~shivaram/teaching/cs747-s2025/lectures/cs747a2022l11.pdf
+https://en.wikipedia.org/wiki/Markov_decision_process
+https://www.geeksforgeeks.org/what-is-markov-decision-process-mdp-and-its-relevance-to-reinforcement-learning/
