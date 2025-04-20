@@ -1,0 +1,26 @@
+>> python .\autograder.py --cmaes
+Running for seed 747
+
+Track 0 marks: 1.0 out of 1
+Track 1 marks: 1.0 out of 1
+Track 2 marks: 1.0 out of 1
+Track 3 marks: 1.0 out of 1
+Track 4 marks: 1.0 out of 1
+Track 5 marks: 1.0 out of 1
+
+Seed 747 marks: 6.0 out of 6
+****************************************************************************************************
+Running for seed 374
+
+Track 0 marks: 1.0 out of 1
+Track 1 marks: 1.0 out of 1
+Track 2 marks: 1.0 out of 1
+Track 3 marks: 1.0 out of 1
+Track 4 marks: 1.0 out of 1
+Track 5 marks: 1.0 out of 1
+
+Seed 374 marks: 6.0 out of 6
+****************************************************************************************************
+Total marks: 12.0 out of 12
+Scaled marks: 4.0 out of 4
+

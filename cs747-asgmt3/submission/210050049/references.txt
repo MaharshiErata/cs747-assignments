@@ -1,0 +1,6 @@
+https://en.wikipedia.org/wiki/CMA-ES
+https://github.com/Farama-Foundation/HighwayEnv
+https://www.cse.iitb.ac.in/~shivaram/teaching/cs747-s2025/pa-3/pa3.html
+https://www.cse.iitb.ac.in/~shivaram/teaching/cs747-s2025/lectures/cs747a2022l19.pdf
+https://en.wikipedia.org/wiki/Proportional%E2%80%93integral%E2%80%93derivative_controller
+https://medium.com/@madhusudhan.d/tuning-pid-controller-for-self-driving-cars-3813f7f18eb0

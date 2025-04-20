@@ -1,0 +1,275 @@
+
+<!-- saved from url=(0071)https://www.cse.iitb.ac.in/~shivaram/teaching/cs747-s2025/pa-3/pa3.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+
+  <style>
+    table {
+    border-collapse: collapse;
+    width: 50%;
+    margin: 20px;
+    }
+    table, th, td {
+    border: 1px solid black;
+    }
+    th, td {
+    padding: 8px;
+    text-align: center;
+    }
+  </style>
+      <link rel="stylesheet" type="text/css" href="./CS 747_ Programming Assignment 3_files/style.css">
+  <title>CS 747: Programming Assignment 3 </title>
+</head>
+
+<body data-new-gr-c-s-check-loaded="8.929.0" data-gr-ext-installed="">
+      <br>
+
+      <center>
+            <h2>
+                  CS 747: Programming Assignment 3 <br>
+                  Optimal Driving Control
+            </h2>
+            <h3>Total marks: 12</h3>
+            <h3>(Prepared by Sandarbh Yadav)</h3>
+      </center>
+
+
+      <p style="text-align:center;">
+        <img src="./CS 747_ Programming Assignment 3_files/track0.gif" alt="Track 0 gif" width="400" height="400"> 
+      </p>
+
+      
+
+      <p>In this assignment, you will be designing an agent to drive a car across various tracks at high speeds. The car gets local information about the track from the environment and has two controls: accelerator and steering.
+        Your task is to come up with a policy that maps information from the environment to the car controls. The maximum duration of each episode is fixed; the episode can also terminate when the car goes off road.
+        The objective of your agent is to cover as much distance as possible within each episode. Your policy should generalise to different tracks, based on which you will be evaluated. You are given a
+        simulator (thanks to <a href="https://github.com/Farama-Foundation/HighwayEnv">The Farama Foundation</a>) that simulates different driving environments for you.
+      </p>
+
+      <h3>Installation</h3>
+
+      You should use Python <a href="https://www.python.org/downloads/release/python-3120/">3.12.0</a> for this assignment. Your code will be tested using a python virtual environment containing the libraries listed
+      in <code>requirements.txt</code> of the compressed directory linked below. You are not allowed to use libraries other than the ones listed in <code>requirements.txt</code>. Your submission will receive zero marks if it 
+      requires installation of additional libraries. For more details, see the section below on "Getting started".
+      
+	  
+<h3>Code Structure</h3>
+<a href="https://www.cse.iitb.ac.in/~shivaram/buffer/pa3-code-v1.tar.gz">This compressed directory</a> consists of the entire code required for this assignment. The structure within the code directory is shown below:
+
+<p style="text-align:center;">
+  <img src="./CS 747_ Programming Assignment 3_files/directory.png" alt="Code directory" width="250" height="290"> 
+</p>
+
+You only have to modify <code>main.py</code> file for this assignment. Grading of your agent is done by <code>autograder.py</code> file. The environment used
+for this assignment is contained in <code>racetrack_env.py</code> present in <code>envs</code> directory of <code>highway_env</code> directory. The <code>videos</code>
+directory stores recorded videos of your agent evaluations.
+
+The only config variable you are allowed
+to modify through the <code>main.py</code> file is <code>config["track"]</code> which represents the index of the six tracks (0 to 5). Your submission will receive zero marks if you change
+any other config variables through <code>main.py</code>. You are allowed to construct and add your own tracks in <code>racetrack_env.py</code> if you think learning on your
+tracks will lead to a better agent. However, you will be evaluated only on the tracks we have provided (visible) and which we have kept for evaluation (unseen).
+
+<h3>Getting Started</h3>
+
+      <p>To get started with the code, follow these steps.</p>
+
+<ol>
+<li> Download the compressed directory linked above, and decompress it. It will yield <code>CS747PA3</code> directory.
+</li><li> Enter <code>CS747PA3</code> directory and you will see a structure as in the image above.
+</li><li> <a href="https://www.geeksforgeeks.org/create-virtual-environment-using-venv-python/">Create a new python virtual environment</a> and install the libraries listed in <code>requirements.txt</code>.
+</li><li> Run the following command: <code>python main.py --render</code>
+</li></ol>
+
+<p>A default agent is provided in the <code>policy()</code> function
+of <code>main.py</code> file whose acceleration and steering are
+always 0. The agent drives straight at a constant speed of 5 units. A
+pop-up window will display how this default agent performs after
+running the above command. Additionally, you can access the recorded
+videos in the <code>videos</code> directory.</p>
+
+
+<h3>Environment Details</h3>
+
+The simulator provides you one of the chosen six tracks (indexed from 0 to 5) for each episode. You can select a particular track by changing <code>env.unwrapped.config["track"]</code> to the index of your desired track.
+The desired index of the track should be configured before calling <code>env.reset()</code>.
+Each track has two lanes and the car will be initialised on one of them. The car is allowed to switch lanes and is initialised with a speed of 5 units. The maximum achievable speed is 20 units.
+The distance covered by the car is measured in counter-clockwise direction along the road. The environment returns the following information.<br>
+
+<ul>
+    <li> <code>obs</code> describes the local front view of the car and contains a 13*13 binary matrix with ones representing centres of the lanes. This binary matrix is aligned with the axes
+        of the car, which is placed at the middle of the last row of the binary matrix i.e. at index [12, 6] of the binary matrix. You can access the binary matrix by <code>obs[0]</code>.
+        A sample binary matrix is shown below. The car is located at index [12, 6]. Here, it is initialised on the left lane and there is another lane to the right of it. Note that the ones represent centres of the lanes, not road boundaries.
+
+        <p style="text-align:center;">
+          <img src="./CS 747_ Programming Assignment 3_files/binarymatrix.png" alt="Code directory" width="300" height="300"> 
+        </p>
+        
+    </li><li> <code>trunc</code> is a boolean variable indicating whether the maximum duration (set as 350 time steps) of the current episode has been reached. <br>
+    </li><li> <code>term</code> is another boolean variable indicating whether the current episode has terminated. An episode is terminated when the car goes off road. <br>
+    </li><li> <code>info</code> is a dictionary containing information about the current speed of the car (<code>info["speed"]</code>), total distance covered by the car (<code>info["distance_covered"]</code>) and whether the car is on road (<code>info["on_road"]</code>).
+    </li></ul>
+
+Note that unlike typical gymnasium environments, our environment does not provide you a reward signal at each time step. You are given the creative freedom to design your own reward signal based on the information
+provided to you by the environment.
+
+
+<h3>Control Details</h3>
+<p> The agent acts in the environment through two controls: [<i>acceleration</i>, <i>steering</i>]. The first control represents the acceleration of the car while the second control
+    represents the steering angle of the car. Both these controls take real values in the range [-1, 1]. Internally, the environment maps the two controls as follows.
+
+  </p><ul>
+    <li> <i>acceleration</i> is mapped from [-1, 1] to [-5 units/s<sup>2</sup>, 5 units/s<sup>2</sup>]
+</li><li> <i>steering</i> is mapped from [-1, 1] to [-&#960;/4, &#960;/4]
+</li>
+</ul>
+
+<p></p>
+
+<h3>Creating your Agent</h3>
+
+You have to code the policy of your agent in the <code>policy()</code> function of <code>main.py</code> file. The <code>policy()</code> function contains a default policy with controls [0, 0]. You have to replace the default policy by your policy.
+The <code>policy()</code> function has access to information provided by the environment (state, info)
+and returns a list with two elements corresponding to the two controls of your car: [<i>acceleration</i>, <i>steering</i>]. Your policy might contain some parameters which have to be optimised.
+
+
+    <p>You are urged to first understand all the relevant aspects of
+      the environment and the code given above, in
+      conjunction with making small changes to <code>policy()</code> function to test out any
+      ideas. Thereafter, spend some time coding up your own agent policy. It is recommended that you craft good features based on the information provided by the environment and use them to
+    formulate your policy. We expect that in the span of two
+    weeks, the most successful agents will be based on a combination of
+    hand-coding and parameter-learning.</p>
+
+    <p>In the course, we cover various methods for reinforcement learning;
+you have a free hand to choose any of these and try to apply them to
+learn better policies. However, to make your job easier, we provide
+support for a particular method for doing <b>policy search</b> (covered in
+the Week 11 lectures, and further discussed in the review for that
+week). Please refer to the section below on CMA-ES for details on
+optimising policy parameters.</p>
+
+<h3>CMA-ES </h3>
+
+<a href="https://en.wikipedia.org/wiki/CMA-ES">Covariance matrix adaptation evolution strategy (CMA-ES)</a> is a derivative-free black-box optimisation technique inspired by biological evolution.
+Suppose &#952; represents your parameter vector. There could be multiple instances of &#952; based on the values of the parameters. Each such instance is mapped to a fitness value <i>f</i>(&#952;) using a fitness function <i>f</i>. The fitness function
+<i>f</i> represents some notion of the goodness of &#952;. CMA-ES initialises a population of <code>pop_size</code> candidate parameter vectors and evolves them across <code>num_gen</code> generations to find an optimising &#952;. In each generation, CMA-ES
+evaluates the population of candidate &#952; using the fitness function <i>f</i>. Then, based on the fitness values CMA-ES greedily selects few top candidate &#952; and uses them to generate the population of next generation. The guiding principle behind CMA-ES is
+<a href="https://en.wikipedia.org/wiki/Survival_of_the_fittest">"survival of the fittest"</a>. Across generations, parameter vectors with high fitness survive and those with low fitness get eliminated. An illustration is shown below. You can read more about CMA-ES <a href="https://arxiv.org/pdf/1604.00772">here</a>.
+
+<p style="text-align:center;">
+  <img src="./CS 747_ Programming Assignment 3_files/cmaes.png" alt="Code directory" width="300" height="350"> 
+</p>
+
+
+We have provided the skeleton code of CMA-ES
+in <code>main.py</code>. If you decide to use it, your main task is to
+come up with suitable parameters to optimise (up to a few tens or even
+hundreds is usually okay), and importantly, an appropriate fitness
+function. <a font="red"> It is recommended that you formulate the fitness function
+keeping generalisation in mind</a>. Note that the <code>cma</code> library
+is built for minimising by default.  In order to maximise your fitness
+function, put a minus sign in front of your fitness
+values. Additionally, you will have to
+specify <code>num_gen</code>, <code>pop_size</code>,
+and <code>num_policy_params</code> for using CMA-ES.
+
+<h3>Running the Code </h3>
+
+The commands used for running the code are different for students who use CMA-ES and those who don't.
+
+    <p>Students who rely only on hand-coded strategies, without using CMA-ES to learn policy parameters, should use the following commands:</p>
+
+    <code>python main.py --numTracks 3 --seed 619</code> (to evaluate your policy on the first 3 tracks using seed 619; numTracks should take integer values from 1 to 6)<br>
+    <code>python main.py --numTracks 5</code> (to evaluate your policy on the first 5 tracks using default seed 2025)<br>
+    <code>python main.py --seed 333</code> (to evaluate your policy on the 6 public tracks using seed 333)<br>
+    <code>python main.py </code> (to evaluate your policy on the 6 public tracks using default seed 2025)<br>
+    You can use <code>--render</code> alongside any of the previous 4 commands to render your policy evaluations and record videos. Note that each command executed with <code>--render</code>
+    will replace your older videos.<br>
+    <code>python autograder.py</code> (to grade your policy on the 6 public tracks; autograder evaluates each track on 2 different seeds)<br>
+
+    <p>Students who use CMA-ES to learn policy parameters, should use the following commands:</p>
+
+    <code>python main.py --train</code> (to train the policy parameters using CMA-ES; the learned parameters of your policy get stored in <code>cmaes_params.json</code> file)<br>
+    <code>python main.py --eval --numTracks 3 --seed 619</code> (to evaluate your policy on the first 3 tracks using seed 619; numTracks should take integer values from 1 to 6)<br>
+    <code>python main.py --eval --numTracks 5</code> (to evaluate your policy on the first 5 tracks using default seed 2025)<br>
+    <code>python main.py --eval --seed 333</code> (to evaluate your policy on the 6 public tracks using seed 333)<br>
+    <code>python main.py --eval</code> (to evaluate your policy on the 6 public tracks using default seed 2025)<br>
+    You can use <code>--render</code> alongside any of the previous 4 commands to render your policy evaluations and record videos. Note that each command executed with <code>--render</code>
+    will replace your older videos. The <code>--eval</code> argument ensures that your policy parameters are read from the <code>cmaes_params.json</code> file.<br>
+    <code>python autograder.py --cmaes</code> (to grade your policy on the 6 public tracks; autograder evaluates each track on 2 different seeds)<br>
+    The <code>--cmaes</code> argument ensures that your policy parameters are read from the <code>cmaes_params.json</code> file while running autograder.<br>
+
+
+<h3>Evaluation</h3>
+
+      <p>4 marks are reserved for the public tracks. 4
+ more marks are reserved for the hidden tracks, which will be similar to the public ones. The final 4 marks are reserved for 
+your report. 4 + 4 + 4 = 12.</p>
+
+      <p>There are 6 public tracks and an undisclosed number of
+	private tracks. Both the public and private tracks will be
+	evaluated on two different seeds. We will evaluate your agent
+	against the performance of two (unseen) baseline agents. For each track
+	and seed combination, you will receive half mark for clearing
+	the first baseline and another half for clearing the second
+	baseline. You can see the performance details of the two
+	baselines in
+	<code>autograder.py</code><br><br>
+
+      <b>Important:</b> It is your responsibility to ensure that the entire autograder procedure (6 public tracks, 2 seeds each) does not take more than 6 minutes. This is a strict requirement and submissions which fail to do so will be penalised accordingly.
+      Also note that we won't be installing additional libraries for evaluating your submission. If you have used CMA-ES, we won't be training your parameterised policies. It is your responsibility to ensure that the learned parameters of your policy are stored in <code>cmaes_params.json</code> file.
+      We have already provided the code for storing your policy parameters.<br><br>
+
+      <b>Report:</b> Unlike the previous assignments, you have been given an open field to design and optimise your solution in this assignment. Your report needs to communicate how you navigated your way to a solution. Your report should elucidate the ingredients of your solution in detail. You should describe the features used, how you mapped your features to the two controls, any intermediate experiments that may 
+       have guided your decisions, and so on. If you have optimised your policy parameters using CMA-ES, you should specify <code>num_gen</code>, <code>pop_size</code> &amp; <code>num_policy_params</code> and
+       describe the fitness function, learning curve, etc. If your report is not sufficiently clear and informative, you will stand to lose marks.
+    
+    </p>
+
+      <p>Unlike the previous assignments, you have been given a free 
+hand to come up with your agent. Hence, we would like to see a clear 
+presentation of your approach. The TAs and instructor may look at your source code and notes to 
+corroborate the results obtained by your program, and may also call you 
+to a face-to-face session to explain your code.</p>
+
+      <h3>Submission</h3>
+      <p>You have to submit one tar.gz file with the name 
+(roll_number).tar.gz. Upon extracting, it must produce a folder with 
+your roll number as its name. It must contain a <code>report.pdf</code> - the report as explained above, and one code file: <code>main.py</code>. If you have used CMA-ES to optimise your
+policy parameters, you must provide the <code>cmaes_params.json</code> file containing parameters of your policy. You must also include a <code>references.txt</code>
+ file if you have referred to any resources while working on this 
+assignment (see the section on Academic Honesty on the course web page).
+ </p>
+
+
+    <h3>Deadline and Rules</h3>
+
+      <p>Your submission is due by 11.59 p.m., Sunday, April 13, 2025.
+        Finish working on your submission well in advance, keeping
+      enough time to generate your data, compile your report, and
+      upload to Moodle.</p>
+    <p>Your submission will not be evaluated (and will receive zero marks) if it is not uploaded to Moodle by the deadline. Do not send
+      your code to the instructor or TAs through any other
+      channel. Requests to evaluate late submissions will not be
+      entertained.</p>
+    <p>Your submission will receive a score of zero if your code does not
+      execute on the specified Python and libraries version.
+      To make sure you have uploaded the right
+      version, download it and check after submitting (but before the
+      deadline, so you can handle any contingencies before the deadline
+      lapses).
+    </p>
+    <p>You are expected to comply with the rules laid out in the "Academic
+      Honesty" section on the course web page, failing which you are liable
+      to be reported for academic malpractice.</p>
+
+<center>
+  <h2>
+      Have fun!!
+  </h2>
+</center>
+
+
+
+<grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration>
+</body></html>
